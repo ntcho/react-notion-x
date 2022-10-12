@@ -12,6 +12,7 @@ import { GracefulImage } from '../components/graceful-image'
 import { evalFormula } from './eval-formula'
 
 export interface IPropertyProps {
+  className?: string
   propertyId?: string
   schema?: types.CollectionPropertySchema
   data?: types.Decoration[]
@@ -20,6 +21,7 @@ export interface IPropertyProps {
   inline?: boolean
   linkToTitlePage?: boolean
   pageHeader?: boolean
+  imageOnly?: boolean
 }
 
 /**
@@ -41,12 +43,14 @@ export const Property: React.FC<IPropertyProps> = (props) => {
 export const PropertyImpl: React.FC<IPropertyProps> = (props) => {
   const { components, mapImageUrl, mapPageUrl } = useNotionContext()
   const {
+    className = "",
     schema,
     data,
     block,
     collection,
     inline = false,
-    linkToTitlePage = true
+    linkToTitlePage = true,
+    imageOnly = false
   } = props
 
   const renderTextValue = React.useMemo(
@@ -137,21 +141,33 @@ export const PropertyImpl: React.FC<IPropertyProps> = (props) => {
           .filter((v) => v.length === 2)
           .map((f) => f.flat().flat())
 
-        return files.map((file, i) => (
-          <components.Link
-            key={i}
-            className='notion-property-file'
-            href={mapImageUrl(file[2] as string, block)}
-            target='_blank'
-            rel='noreferrer noopener'
-          >
+        if (imageOnly === true) {
+          return files.map((file, i) => (
             <GracefulImage
+              key={i}
+              className='notion-property-file'
               alt={file[0] as string}
               src={mapImageUrl(file[2] as string, block)}
               loading='lazy'
             />
-          </components.Link>
-        ))
+          ))
+        } else {
+          return files.map((file, i) => (
+            <components.Link
+              key={i}
+              className='notion-property-file'
+              href={mapImageUrl(file[2] as string, block)}
+              target='_blank'
+              rel='noreferrer noopener'
+            >
+              <GracefulImage
+                alt={file[0] as string}
+                src={mapImageUrl(file[2] as string, block)}
+                loading='lazy'
+              />
+            </components.Link>
+          ))
+        }
       },
     [block, components, data, mapImageUrl]
   )
@@ -430,7 +446,7 @@ export const PropertyImpl: React.FC<IPropertyProps> = (props) => {
   }
 
   return (
-    <span className={`notion-property notion-property-${schema.type}`}>
+    <span className={`${className} notion-property notion-property-${schema.type}`}>
       {content}
     </span>
   )
